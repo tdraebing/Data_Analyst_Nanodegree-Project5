@@ -1,0 +1,4 @@
+http://scikit-learn.org/stable/index.html
+https://plot.ly/api/
+https://stanford.edu/~mwaskom/software/seaborn/api.html
+https://www.udacity.com/course/viewer#!/c-ud919/l-3185618761/m-3167078942
