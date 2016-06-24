@@ -14,7 +14,6 @@ import pickle
 import sys
 from sklearn.cross_validation import StratifiedShuffleSplit
 sys.path.append("./tools/")
-from feature_format import featureFormat, targetFeatureSplit
 
 PERF_FORMAT_STRING = "\
 \tAccuracy: {:>0.{display_precision}f}\tPrecision: {:>0.{display_precision}f}\t\
@@ -22,27 +21,22 @@ Recall: {:>0.{display_precision}f}\tF1: {:>0.{display_precision}f}\tF2: {:>0.{di
 RESULTS_FORMAT_STRING = "\tTotal predictions: {:4d}\tTrue positives: {:4d}\tFalse positives: {:4d}\
 \tFalse negatives: {:4d}\tTrue negatives: {:4d}"
 
-def test_classifier(clf, dataset, feature_list, folds = 1000):
-    data = featureFormat(dataset, feature_list, sort_keys = True)
-    labels, features = targetFeatureSplit(data)
+
+def test_classifier(clf, dataset, folds=100):
+    labels = dataset['poi']
+    features = dataset.drop(['poi'], 1)
     cv = StratifiedShuffleSplit(labels, folds, random_state = 42)
     true_negatives = 0
     false_negatives = 0
     true_positives = 0
     false_positives = 0
-    for train_idx, test_idx in cv: 
-        features_train = []
-        features_test  = []
-        labels_train   = []
-        labels_test    = []
-        for ii in train_idx:
-            features_train.append( features[ii] )
-            labels_train.append( labels[ii] )
-        for jj in test_idx:
-            features_test.append( features[jj] )
-            labels_test.append( labels[jj] )
-        
-        ### fit the classifier using training set, and test on test set
+    for train_idx, test_idx in cv:
+        features_train = features.iloc[train_idx]
+        features_test  = features.iloc[test_idx]
+        labels_train   = labels.iloc[train_idx]
+        labels_test    = labels.iloc[test_idx]
+
+        # fit the classifier using training set, and test on test set
         clf.fit(features_train, labels_train)
         predictions = clf.predict(features_test)
         for prediction, truth in zip(predictions, labels_test):
@@ -78,28 +72,27 @@ CLF_PICKLE_FILENAME = "./data/my_classifier.pkl"
 DATASET_PICKLE_FILENAME = "./data/my_dataset.pkl"
 FEATURE_LIST_FILENAME = "./data/my_feature_list.pkl"
 
-def dump_classifier_and_data(clf, dataset, feature_list):
+
+def dump_classifier_and_data(clf, dataset):
     with open(CLF_PICKLE_FILENAME, "w") as clf_outfile:
         pickle.dump(clf, clf_outfile)
     with open(DATASET_PICKLE_FILENAME, "w") as dataset_outfile:
         pickle.dump(dataset, dataset_outfile)
-    with open(FEATURE_LIST_FILENAME, "w") as featurelist_outfile:
-        pickle.dump(feature_list, featurelist_outfile)
+
 
 def load_classifier_and_data():
     with open(CLF_PICKLE_FILENAME, "r") as clf_infile:
         clf = pickle.load(clf_infile)
     with open(DATASET_PICKLE_FILENAME, "r") as dataset_infile:
         dataset = pickle.load(dataset_infile)
-    with open(FEATURE_LIST_FILENAME, "r") as featurelist_infile:
-        feature_list = pickle.load(featurelist_infile)
-    return clf, dataset, feature_list
+    return clf, dataset
+
 
 def main():
-    ### load up student's classifier, dataset, and feature_list
-    clf, dataset, feature_list = load_classifier_and_data()
-    ### Run testing script
-    test_classifier(clf, dataset, feature_list)
+    # load up student's classifier, dataset, and feature_list
+    clf, dataset = load_classifier_and_data()
+    # Run testing script
+    test_classifier(clf, dataset)
 
 if __name__ == '__main__':
     main()
