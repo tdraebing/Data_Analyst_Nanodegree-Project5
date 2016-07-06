@@ -5,8 +5,9 @@ import numpy as np
 # data preprocessing
 def prepare_data(data_dict):
     # delete TOTAL-entry
-    print(data_dict)
     del data_dict['TOTAL']
+    del data_dict['THE TRAVEL AGENCY IN THE PARK']
+    del data_dict['LOCKHART EUGENE E']
     # create dataframe
     df = pd.DataFrame(data_dict).transpose()
     # delete email_address variable
@@ -21,25 +22,24 @@ def prepare_data(data_dict):
     df['restricted_stock_deferred_bin'] = np.zeros((len(df.index), 1)) + 1
     df.loc[df['restricted_stock_deferred'].isnull(),
            'restricted_stock_deferred_bin'] = 0
-    # delete variables with large amounts of NaN
-    df = df.drop(['loan_advances',
-                  'director_fees',
-                  'restricted_stock_deferred'], 1)
     # reduce variables
     features_list = ['bonus',
                      'deferral_payments',
                      'deferred_income',
+                     'director_fees',
                      'director_fees_bin',
                      'exercised_stock_options',
                      'expenses',
                      'from_messages',
                      'from_poi_to_this_person',
                      'from_this_person_to_poi',
+                     'loan_advances',
                      'loan_advances_bin',
                      'long_term_incentive',
                      'other',
                      'poi',
                      'restricted_stock',
+                     'restricted_stock_deferred',
                      'restricted_stock_deferred_bin',
                      'salary',
                      'shared_receipt_with_poi',
